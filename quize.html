@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>歴史人物クイズ</title>
+
+<script>
+    window.addEventListener('load', async () => {
+        const sendButton = document.getElementById('send');
+        // 検索実行ボタンで実行する処理
+        sendButton.addEventListener('click', async () => {
+            makeQuery();
+        }, false);
+    }, false);
+
+    // SPARQLクエリを実行する
+    async function makeQuery(){
+        // SPARQLエンドポイントの指定
+        let endpoint = "https://jpsearch.go.jp/rdf/sparql/";
+
+        // SPARQLクエリの取得
+        let query = document.getElementById('query_area').value;
+
+        // SPARQLクエリの実行処理
+        const resultData = await sendSPARQLQuery(endpoint, query);
+
+        // SPARQLクエリの実行結果の表示処理
+        const resultArea = document.getElementById('result_div');
+        showResult(resultData, resultArea);
+    }
+
+    function showResult(resultData, resultArea){
+        const data = resultData.results.bindings; // 戻り値のデータを格納する配列（JSON）
+        let mesText = '<h2>クイズ問題</h2>'; // 表示内容を作成するための変数
+
+        // データが存在する場合のみ処理を実行
+        if(data.length > 0) {
+            
+            // データからランダムに1つの歴史人物を選択
+            const randomIndex = Math.floor(Math.random() * data.length);
+            const cho = data[randomIndex];
+            const question = `${cho.label.value}は何年生まれ？`;
+            const birthYear = cho.dt.value.split('-')[0];
+            const options = generateOptions(birthYear);
+            
+            mesText += `<p>${question}</p>
+                        <ul>`;
+            // 選択肢を表示
+            options.forEach(option => {
+                mesText += `<li>${option}</li>`;
+            });
+            mesText += `</ul>`;
+        } else {
+            mesText = '<p>クエリにマッチするデータが見つかりませんでした。</p>';
+        }
+
+        resultArea.innerHTML = mesText;
+    }
+
+    // 正解と不正解の選択肢を生成する関数
+    function generateOptions(correctAnswer) {
+        const options = [correctAnswer];
+        while(options.length < 4) {
+            const randomYear = Math.floor(Math.random() * 200) + 1800; // ランダムな年を生成（1800年から200年分）
+            if(!options.includes(randomYear.toString())) {
+                options.push(randomYear.toString());
+            }
+        }
+        // 選択肢をシャッフル
+        shuffleArray(options);
+        return options;
+    }
+
+    // 配列をシャッフルする関数
+    function shuffleArray(array) {
+        for(let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    async function sendSPARQLQuery(endpoint, query) {
+        const response = await fetch(endpoint + '?query=' + encodeURIComponent(query) + '&format=json');
+        return await response.json();
+    }
+</script>
+</head>
+<body>
+<h1>歴史人物クイズ</h1>
+<hr>
+<header id="head" >
+	<h1>SPARQLを用いたクイズ</h1>
+</header>
+<div id="menu" class="container">
+<input type="button" id="send" value="クイズ生成" style="margin-top:8px; "><br>
+</div>
+<!-- 検索条件設定の領域 -->
+<div id="query" class="container">
+<b>SPARQLクエリ</b><br>
+<textarea id="query_area" class="t_area" rows="10">
+SELECT ?cho ?label ?dt WHERE {
+    ?cho a type:Person ;
+    rdfs:label ?label;
+    schema:birthDate [
+        rdfs:label ?dt ;
+        jps:start ?start;
+        jps:end ?end
+    ]
+    FILTER(?start >= 1810 && ?end < 1820)
+} ORDER BY RAND() LIMIT 1
+</textarea>
+<br>
+</div>
+
+<!-- 結果表示用の領域 -->
+<div id="result_div" class="container" style="flex: 1;"></div>
+
+</body>
+</html>
