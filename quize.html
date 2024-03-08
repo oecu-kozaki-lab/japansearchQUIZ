@@ -28,6 +28,9 @@
         // SPARQLクエリの実行結果の表示処理
         const resultArea = document.getElementById('result_div');
         showResult(resultData, resultArea);
+
+
+        
     }
 
     function showResult(resultData, resultArea){
@@ -45,12 +48,13 @@
             const options = generateOptions(correctAnswer, data);
             
             mesText += `<p>${question}</p>
-                        <ul>`;
+                        <form id="quizForm">`; // ラジオボタンのフォーム開始
             // 選択肢を表示
             options.forEach(option => {
-                mesText += `<li>${option}</li>`;
+                mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`;
             });
-            mesText += `</ul>`;
+            mesText += `</form>`; // ラジオボタンのフォーム終了
+            mesText += `<button onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
         } else {
             mesText = '<p>クエリにマッチするデータが見つかりませんでした。</p>';
         }
@@ -85,6 +89,23 @@
         const response = await fetch(endpoint + '?query=' + encodeURIComponent(query) + '&format=json');
         return await response.json();
     }
+
+    // 回答をチェックする関数
+    function checkAnswer(correctAnswer) {
+        const form = document.getElementById("quizForm");
+        const selectedAnswer = form.querySelector('input[name="answer"]:checked');
+        if (selectedAnswer) {
+            const answerValue = selectedAnswer.value;
+            if (answerValue === correctAnswer) {
+                alert("正解です！");
+            } else {
+                alert("不正解です。正解は " + correctAnswer + " です。");
+            }
+        } else {
+            alert("回答が選択されていません。");
+        }
+    }
+    
 </script>
 </head>
 <body>
