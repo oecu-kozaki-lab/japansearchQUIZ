@@ -4,18 +4,25 @@
 <meta charset="utf-8">
 <title>歴史人物クイズ</title>
 
-<script>
+<script>{
+ 
     window.addEventListener('load', async () => {
         const sendButton = document.getElementById('send');
         // 検索実行ボタンで実行する処理
         sendButton.addEventListener('click', async () => {
+            
             makeQuery();
         }, false);
     }, false);
-
+ }
     
     // SPARQLクエリを実行する
     async function makeQuery(){
+
+        const button = document.getElementById('next');
+        // ボタンを非表示にする
+        button.style.display = 'none';
+
         // SPARQLエンドポイントの指定
         let endpoint = "https://jpsearch.go.jp/rdf/sparql/";
 
@@ -90,22 +97,37 @@
         return await response.json();
     }
 
-    // 回答をチェックする関数
-    function checkAnswer(correctAnswer) {
-        const form = document.getElementById("quizForm");
-        const selectedAnswer = form.querySelector('input[name="answer"]:checked');
-        if (selectedAnswer) {
-            const answerValue = selectedAnswer.value;
-            if (answerValue === correctAnswer) {
-                alert("正解です！");
-            } else {
-                alert("不正解です。正解は " + correctAnswer + " です。");
-            }
+ // 回答をチェックする関数
+function checkAnswer(correctAnswer) {
+    let mesText = ''; // 表示内容を作成するための変数
+    const form = document.getElementById("quizForm");
+    const next = document.getElementById("next");
+    const selectedAnswer = form.querySelector('input[name="answer"]:checked');
+    if (selectedAnswer) {
+        const answerValue = selectedAnswer.value;
+        if (answerValue === correctAnswer) {
+            alert("正解です");
+            next.style.display = 'inline';
+            mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
+            next.innerHTML=mesText;
+
         } else {
-            alert("回答が選択されていません。");
+            alert("不正解です。正解は " + correctAnswer + " です。");
+            next.style.display = 'inline';
+            mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
+            next.innerHTML=mesText;
         }
     }
-    
+    else {
+        alert("回答が選択されていません。");
+        resultArea.innerHTML = mesText;
+    }
+
+    // 結果表示用の領域を非表示にする
+
+}
+
+
 </script>
 </head>
 <body>
@@ -114,7 +136,7 @@
 <header id="head" >
 </header>
 <div id="menu" class="container">
-<input type="button" id="send" value="クイズ生成" style="margin-top:8px; "><br>
+<input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">
 </div>
 <!-- 検索条件設定の領域 -->
 <div id="query" class="container">
@@ -143,6 +165,7 @@
 
 <!-- 結果表示用の領域 -->
 <div id="result_div" class="container" style="flex: 1;"></div>
+<div id="next"></div>
 
 </body>
 </html>
