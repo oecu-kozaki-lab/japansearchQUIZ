@@ -134,6 +134,11 @@ function checkAnswer(correctAnswer) {
             mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
             next.innerHTML=mesText+mesText2;
         }
+
+        const radioButtons = form.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(button => {
+            button.disabled = true;
+        });
     }
     else {
         alert("回答が選択されていません。");
