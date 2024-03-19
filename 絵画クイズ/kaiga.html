@@ -2,19 +2,15 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>歴史人物クイズ</title>
+<title>絵画クイズ</title>
 
 <script>{
  
     window.addEventListener('load', async () => {
         const sendButton = document.getElementById('send');
-        const resendButton = document.getElementById('resend');
         // 検索実行ボタンで実行する処理
         sendButton.addEventListener('click', async () => {
-            makeQuery();
-        }, false);
-
-        resendButton.addEventListener('click', async () => {
+            
             makeQuery();
         }, false);
     }, false);
@@ -25,6 +21,7 @@
     
     // SPARQLクエリを実行する
     async function makeQuery(){
+
         const button = document.getElementById('next');
         // ボタンを非表示にする
         button.style.display = 'none';
@@ -40,45 +37,40 @@
 
         // SPARQLクエリの実行結果の表示処理
         const resultArea = document.getElementById('result_div');
-
         showResult(resultData, resultArea);
 
+
+        
     }
 
-    function showResult(resultData, resultArea) {
-    const data = resultData.results.bindings; // 戻り値のデータを格納する配列（JSON）
-    let mesText = '<h2>クイズ問題</h2>'; // 表示内容を作成するための変数
+    function showResult(resultData, resultArea){
+        const data = resultData.results.bindings; // 戻り値のデータを格納する配列（JSON）
+        let mesText = '<h2>クイズ問題</h2>'; // 表示内容を作成するための変数
 
-    // データが存在する場合のみ処理を実行
-    if (data.length > 0) {
-        // データからランダムに1つの歴史人物を選択
-        const randomIndex = Math.floor(Math.random() * data.length);
-        const cho = data[randomIndex];
-        let question = '';
-        if (cho.thumbnail) {
-            question = `<img src="${cho.thumbnail.value}" alt="クイズ画像">`; // 画像がある場合
+        // データが存在する場合のみ処理を実行
+        if(data.length > 0) {
+            
+            // データからランダムに1つの歴史人物を選択
+            const randomIndex = Math.floor(Math.random() * data.length);
+            const cho = data[randomIndex];
+            const question = `<img src="${cho.thumbnail.value}" alt="クイズ画像">`; // 画像を表示
+            const correctAnswer = cho.label.value;
+            const options = generateOptions(correctAnswer, data);
+            
+            mesText += `<p>${question}</p>
+                        <form id="quizForm">`; // ラジオボタンのフォーム開始
+            // 選択肢を表示
+            options.forEach(option => {
+                mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`;
+            });
+            mesText += `</form>`; // ラジオボタンのフォーム終了
+            mesText += `<button onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
         } else {
-            makeQuery();
-            //question = '<p>画像が見つかりませんでした。</p>'; // 画像がない場合
+            mesText = '<p>クエリにマッチするデータが見つかりませんでした。</p>';
         }
-        const correctAnswer = cho.label.value;
-        const options = generateOptions(correctAnswer, data);
 
-        mesText += `<p>${question}</p>
-                    <form id="quizForm">`; // ラジオボタンのフォーム開始
-        // 選択肢を表示
-        options.forEach(option => {
-            mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`;
-        });
-        mesText += `</form>`; // ラジオボタンのフォーム終了
-        mesText += `<button onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
-    } else {
-        mesText = '<p>クエリにマッチするデータが見つかりませんでした。</p>';
+        resultArea.innerHTML = mesText;
     }
-
-    resultArea.innerHTML = mesText;
-}
-
 
     // 不正解の選択肢を生成する関数
     function generateOptions(correctAnswer, data) {
@@ -111,28 +103,22 @@
  // 回答をチェックする関数
 function checkAnswer(correctAnswer) {
     let mesText = ''; // 表示内容を作成するための変数
-    let mesText2 = ''; // 表示内容を作成するための変数
     const form = document.getElementById("quizForm");
     const next = document.getElementById("next");
-    const renext = document.getElementById("renext");
     const selectedAnswer = form.querySelector('input[name="answer"]:checked');
     if (selectedAnswer) {
         const answerValue = selectedAnswer.value;
         if (answerValue === correctAnswer) {
             alert("正解です");
-            //form.disabled = true;
             next.style.display = 'inline';
-            renext.style.display='inline';
             mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
-            next.innerHTML=mesText+mesText2;
+            next.innerHTML=mesText;
 
         } else {
             alert("不正解です。正解は " + correctAnswer + " です。");
-            //form.disabled = true;
             next.style.display = 'inline';
-            renext.style.display='inline';
             mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
-            next.innerHTML=mesText+mesText2;
+            next.innerHTML=mesText;
         }
     }
     else {
@@ -154,7 +140,6 @@ function checkAnswer(correctAnswer) {
 </header>
 <div id="menu" class="container">
 <input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">
-<input type="button" id="resend" value="クイズを再生成" style="margin-top:8px; ">
 </div>
 <!-- 検索条件設定の領域 -->
 <div id="query" class="container">
@@ -184,7 +169,6 @@ function checkAnswer(correctAnswer) {
 <!-- 結果表示用の領域 -->
 <div id="result_div" class="container" style="flex: 1;"></div>
 <div id="next"></div>
-<div id="renext"></div>
 
 
 </body>
