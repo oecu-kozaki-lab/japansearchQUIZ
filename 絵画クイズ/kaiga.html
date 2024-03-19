@@ -2,25 +2,23 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" media="screen" href="kaiga.css" />
 <title>絵画クイズ</title>
 
 <script>{
- 
+
     window.addEventListener('load', async () => {
         const sendButton = document.getElementById('send');
         // 検索実行ボタンで実行する処理
         sendButton.addEventListener('click', async () => {
-            
+
             makeQuery();
         }, false);
     }, false);
  }
-    
 
-    
-    
+
+
+
     // SPARQLクエリを実行する
     async function makeQuery(){
 
@@ -42,7 +40,7 @@
         showResult(resultData, resultArea);
 
 
-        
+
     }
 
     function showResult(resultData, resultArea){
@@ -51,19 +49,20 @@
 
         // データが存在する場合のみ処理を実行
         if(data.length > 0) {
-            
-            // データからランダムに1つの歴史人物を選択
+
+            // データからランダムに1つの絵画を選択
             const randomIndex = Math.floor(Math.random() * data.length);
             const cho = data[randomIndex];
             const question = `<img src="${cho.thumbnail.value}" alt="クイズ画像">`; // 画像を表示
-            const correctAnswer = cho.label.value;
+            const correctAnswer = cho.creator.value; // 正解の作者名
             const options = generateOptions(correctAnswer, data);
-            
+
             mesText += `<p>${question}</p>
                         <form id="quizForm">`; // ラジオボタンのフォーム開始
             // 選択肢を表示
             options.forEach(option => {
-                mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`;
+                const name = extractNameFromURL(option);
+                mesText += `<input type="radio" name="answer" value="${name}">${name}<br>`;
             });
             mesText += `</form>`; // ラジオボタンのフォーム終了
             mesText += `<button onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
@@ -79,7 +78,7 @@
         const options = [correctAnswer];
         while(options.length < 4) {
             const randomIndex = Math.floor(Math.random() * data.length);
-            const randomOption = data[randomIndex].label.value;
+            const randomOption = data[randomIndex].creator.value;
             if(!options.includes(randomOption)) {
                 options.push(randomOption);
             }
@@ -95,6 +94,11 @@
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
+    }
+
+    // URLから名前部分を抽出する関数
+    function extractNameFromURL(url) {
+        return url.split('/').pop();
     }
 
     async function sendSPARQLQuery(endpoint, query) {
@@ -117,8 +121,10 @@ function checkAnswer(correctAnswer) {
             next.innerHTML=mesText;
 
         } else {
-            alert("不正解です。正解は " + correctAnswer + " です。");
-            next.style.display = 'inline';
+            const correctName = extractNameFromURL(correctAnswer);
+            alert(`不正解です。正解は ${correctName} です。`);
+            next
+            .style.display = 'inline';
             mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
             next.innerHTML=mesText;
         }
@@ -136,35 +142,29 @@ function checkAnswer(correctAnswer) {
 </script>
 </head>
 <body>
-
+<h1>絵画クイズ</h1>
+<hr>
 <header id="head" >
-    <h2>絵画クイズ</h2>
 </header>
-
 <div id="menu" class="container">
 <input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">
 </div>
 <!-- 検索条件設定の領域 -->
 <div id="query" class="container">
 <textarea id="query_area" class="t_area" rows="10" style="display: none;">
-    SELECT ?cho ?label ?dt ?thumbnail ?url WHERE {
-        ?cho a type:Person ;
+    SELECT ?cho ?label ?thumbnail ?temporal ?creator WHERE {
+        ?cho a type:絵画;
+             schema:temporal ?temporal;
+             schema:image ?thumbnail ; 
              rdfs:label ?label;
-             schema:birthDate [
-                rdfs:label ?dt ;
-                jps:start ?start;
-                jps:end ?end
-             ].
-        
-        FILTER(?start >= 1810 && ?end < 1900)
-        
-        OPTIONAL {?cho schema:image ?thumbnail}
-        OPTIONAL {?cho schema:url ?url}
-        
-        FILTER EXISTS {?cho schema:url ?url}
-        FILTER(STRSTARTS(STR(?url), "https://www.ndl.go.jp/portrait/"))
-      } ORDER BY ?start
-      
+             schema:creator ?creator. 
+        ?creator  schema:birthDate [
+              rdfs:label ?dt ;
+              jps:start ?start;
+              jps:end ?end
+           ].
+         FILTER(?start >= 1400 && ?end < 1600)
+    }
 </textarea>
 <br>
 </div>
