@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>絵画クイズ</title>
+
+<script>{
+ 
+    window.addEventListener('load', async () => {
+        const sendButton = document.getElementById('send');
+        // 検索実行ボタンで実行する処理
+        sendButton.addEventListener('click', async () => {
+            
+            makeQuery();
+        }, false);
+    }, false);
+ }
+    
+
+    
+    
+    // SPARQLクエリを実行する
+    async function makeQuery(){
+
+        const button = document.getElementById('next');
+        // ボタンを非表示にする
+        button.style.display = 'none';
+
+        // SPARQLエンドポイントの指定
+        let endpoint = "https://jpsearch.go.jp/rdf/sparql/";
+
+        // SPARQLクエリの取得
+        let query = document.getElementById('query_area').value;
+
+        // SPARQLクエリの実行処理
+        const resultData = await sendSPARQLQuery(endpoint, query);
+
+        // SPARQLクエリの実行結果の表示処理
+        const resultArea = document.getElementById('result_div');
+        showResult(resultData, resultArea);
+
+
+        
+    }
+
+    function showResult(resultData, resultArea){
+        const data = resultData.results.bindings; // 戻り値のデータを格納する配列（JSON）
+        let mesText = '<h2>クイズ問題</h2>'; // 表示内容を作成するための変数
+
+        // データが存在する場合のみ処理を実行
+        if(data.length > 0) {
+            
+            // データからランダムに1つの歴史人物を選択
+            const randomIndex = Math.floor(Math.random() * data.length);
+            const cho = data[randomIndex];
+            const question = `<img src="${cho.thumbnail.value}" alt="クイズ画像">`; // 画像を表示
+            const correctAnswer = cho.label.value;
+            const options = generateOptions(correctAnswer, data);
+            
+            mesText += `<p>${question}</p>
+                        <form id="quizForm">`; // ラジオボタンのフォーム開始
+            // 選択肢を表示
+            options.forEach(option => {
+                mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`;
+            });
+            mesText += `</form>`; // ラジオボタンのフォーム終了
+            mesText += `<button onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
+        } else {
+            mesText = '<p>クエリにマッチするデータが見つかりませんでした。</p>';
+        }
+
+        resultArea.innerHTML = mesText;
+    }
+
+    // 不正解の選択肢を生成する関数
+    function generateOptions(correctAnswer, data) {
+        const options = [correctAnswer];
+        while(options.length < 4) {
+            const randomIndex = Math.floor(Math.random() * data.length);
+            const randomOption = data[randomIndex].label.value;
+            if(!options.includes(randomOption)) {
+                options.push(randomOption);
+            }
+        }
+        // 選択肢をシャッフル
+        shuffleArray(options);
+        return options;
+    }
+
+    // 配列をシャッフルする関数
+    function shuffleArray(array) {
+        for(let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    async function sendSPARQLQuery(endpoint, query) {
+        const response = await fetch(endpoint + '?query=' + encodeURIComponent(query) + '&format=json');
+        return await response.json();
+    }
+
+ // 回答をチェックする関数
+function checkAnswer(correctAnswer) {
+    let mesText = ''; // 表示内容を作成するための変数
+    const form = document.getElementById("quizForm");
+    const next = document.getElementById("next");
+    const selectedAnswer = form.querySelector('input[name="answer"]:checked');
+    if (selectedAnswer) {
+        const answerValue = selectedAnswer.value;
+        if (answerValue === correctAnswer) {
+            alert("正解です");
+            next.style.display = 'inline';
+            mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
+            next.innerHTML=mesText;
+
+        } else {
+            alert("不正解です。正解は " + correctAnswer + " です。");
+            next.style.display = 'inline';
+            mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
+            next.innerHTML=mesText;
+        }
+    }
+    else {
+        alert("回答が選択されていません。");
+        resultArea.innerHTML = mesText;
+    }
+
+    // 結果表示用の領域を非表示にする
+
+}
+
+
+</script>
+</head>
+<body>
+<h1>歴史人物クイズ</h1>
+<hr>
+<header id="head" >
+</header>
+<div id="menu" class="container">
+<input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">
+</div>
+<!-- 検索条件設定の領域 -->
+<div id="query" class="container">
+<textarea id="query_area" class="t_area" rows="10" style="display: none;">
+    SELECT ?cho ?label ?dt ?thumbnail ?url WHERE {
+        ?cho a type:Person ;
+             rdfs:label ?label;
+             schema:birthDate [
+                rdfs:label ?dt ;
+                jps:start ?start;
+                jps:end ?end
+             ].
+        
+        FILTER(?start >= 1810 && ?end < 1900)
+        
+        OPTIONAL {?cho schema:image ?thumbnail}
+        OPTIONAL {?cho schema:url ?url}
+        
+        FILTER EXISTS {?cho schema:url ?url}
+        FILTER(STRSTARTS(STR(?url), "https://www.ndl.go.jp/portrait/"))
+      } ORDER BY ?start
+      
+</textarea>
+<br>
+</div>
+
+<!-- 結果表示用の領域 -->
+<div id="result_div" class="container" style="flex: 1;"></div>
+<div id="next"></div>
+
+
+</body>
+</html>
