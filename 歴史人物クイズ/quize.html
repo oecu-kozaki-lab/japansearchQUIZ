@@ -20,7 +20,8 @@
     }, false);
  }
     
-
+ let count=0;
+ let correct=0;
     
     
     // SPARQLクエリを実行する
@@ -42,12 +43,21 @@
         const resultArea = document.getElementById('result_div');
 
         showResult(resultData, resultArea);
-
     }
 
     function showResult(resultData, resultArea) {
     const data = resultData.results.bindings; // 戻り値のデータを格納する配列（JSON）
-    let mesText = '<h2>クイズ問題</h2>'; // 表示内容を作成するための変数
+    count++;
+    let mesText = '<h2>クイズ問題'+'<br>'+count+'/5問目</h2>'; // 表示内容を作成するための変数
+    if(count==6){
+
+        mesText="あなたの正解は"+correct+"問です";
+
+        count=0;
+        correct=0;
+        alert(mesText);
+        return;
+    }
 
     // データが存在する場合のみ処理を実行
     if (data.length > 0) {
@@ -71,11 +81,10 @@
             mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`;
         });
         mesText += `</form>`; // ラジオボタンのフォーム終了
-        mesText += `<button onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
+        mesText += `<button id="answerButton" onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
     } else {
         mesText = '<p>クエリにマッチするデータが見つかりませんでした。</p>';
     }
-
     resultArea.innerHTML = mesText;
 }
 
@@ -112,26 +121,37 @@
 function checkAnswer(correctAnswer) {
     let mesText = ''; // 表示内容を作成するための変数
     let mesText2 = ''; // 表示内容を作成するための変数
+    let total=0;
     const form = document.getElementById("quizForm");
     const next = document.getElementById("next");
-    const renext = document.getElementById("renext");
+    const answerButton = document.getElementById('answerButton');
+    //const renext = document.getElementById("renext");
     const selectedAnswer = form.querySelector('input[name="answer"]:checked');
+    const button = document.getElementById('next');
+
     if (selectedAnswer) {
         const answerValue = selectedAnswer.value;
         if (answerValue === correctAnswer) {
             alert("正解です");
             //form.disabled = true;
             next.style.display = 'inline';
-            renext.style.display='inline';
-            mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
+            //renext.style.display='inline';
+            answerButton.style.display = 'none';
+            mesText += '<br>'+'<span style="color:red">正解です。'+'<br>'+'<br>';
+            mesText += `<button onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
             next.innerHTML=mesText+mesText2;
+            correct++;
 
         } else {
             alert("不正解です。正解は " + correctAnswer + " です。");
             //form.disabled = true;
             next.style.display = 'inline';
-            renext.style.display='inline';
-            mesText += `<button onclick="makeQuery()">次の問題へ</button>`; // 次の問題作成のボタン
+            //renext.style.display='inline';
+            answerButton.style.display = 'none';
+            //mesText+="正解は " + correctAnswer + " です。"+'<br>';
+            mesText += '<br>'+'正解は ' +'<span style="color:red">'+ correctAnswer +'</span>' + ' です。'+'<br>'+'<br>';
+            //mesText.style.color='red';
+            mesText2 += `<button onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
             next.innerHTML=mesText+mesText2;
         }
 
@@ -159,7 +179,6 @@ function checkAnswer(correctAnswer) {
 </header>
 <div id="menu" class="container">
 <input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">
-<input type="button" id="resend" value="クイズを再生成" style="margin-top:8px; ">
 </div>
 <!-- 検索条件設定の領域 -->
 <div id="query" class="container">
