@@ -69,6 +69,7 @@
             question = `<img src="${cho.thumbnail.value}" alt="クイズ画像">`; // 画像がある場合
         } else {
             makeQuery();
+            count=count-1;
             //question = '<p>画像が見つかりませんでした。</p>'; // 画像がない場合
         }
         const correctAnswer = cho.label.value;
@@ -132,18 +133,23 @@ function checkAnswer(correctAnswer) {
     if (selectedAnswer) {
         const answerValue = selectedAnswer.value;
         if (answerValue === correctAnswer) {
-            alert("正解です");
+            //alert("正解です");
             //form.disabled = true;
             next.style.display = 'inline';
             //renext.style.display='inline';
             answerButton.style.display = 'none';
             mesText += '<br>'+'<span style="color:red">正解です。'+'<br>'+'<br>';
+            if(count<5){
             mesText += `<button onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+            }
+            else{
+                mesText += `<button onclick="makeQuery()">結果を見る</button>`+'<br>';
+            }
             next.innerHTML=mesText+mesText2;
             correct++;
 
         } else {
-            alert("不正解です。正解は " + correctAnswer + " です。");
+            //alert("不正解です。正解は " + correctAnswer + " です。");
             //form.disabled = true;
             next.style.display = 'inline';
             //renext.style.display='inline';
@@ -151,7 +157,12 @@ function checkAnswer(correctAnswer) {
             //mesText+="正解は " + correctAnswer + " です。"+'<br>';
             mesText += '<br>'+'正解は ' +'<span style="color:red">'+ correctAnswer +'</span>' + ' です。'+'<br>'+'<br>';
             //mesText.style.color='red';
+            if(count<5){
             mesText2 += `<button onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+            }
+            else{
+                mesText += `<button onclick="makeQuery()">結果を見る</button>`+'<br>';
+            }
             next.innerHTML=mesText+mesText2;
         }
 
