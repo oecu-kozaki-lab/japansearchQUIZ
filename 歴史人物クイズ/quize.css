@@ -35,6 +35,26 @@
 #answerButton:hover {
     background-color: #4e6cd2;
 }
+#send,
+#nextButton {
+    background-color: #6a8efb;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block;
+  margin: 0 auto;
+
+}
+
+#send:hover,
+#nextButton:hover {
+    background-color: #4e6cd2;
+}
+
+
 
 body {
     margin: 0;
