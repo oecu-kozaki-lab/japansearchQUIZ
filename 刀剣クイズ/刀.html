@@ -56,6 +56,9 @@
         count=0;
         correct=0;
         alert(mesText);
+        mesText += `<button id="home" onclick="goToHomePage()">ホームに戻る</button>`; // 回答を完了するボタン
+        mesText += `<button id="return" onclick="makeQuery()">もう1度問題を解く</button>`; // 回答を完了するボタン
+        resultArea.innerHTML = mesText;
         return;
     }
 
@@ -181,6 +184,10 @@ function checkAnswer(correctAnswer) {
         resultArea.innerHTML = mesText;
     }
 
+    function goToHomePage() { //ホームページ取得
+        window.location.href = "../home.html"; // ホームページへのリンク
+    }
+    
     // 結果表示用の領域を非表示にする
 
 }
