@@ -141,7 +141,8 @@ function checkAnswer(correctAnswer) {
             next.style.display = 'inline';
             //renext.style.display='inline';
             answerButton.style.display = 'none';
-            mesText += '<br>'+'<span style="color:red">正解です。'+'<br>'+'<br>';
+            mesText += '<br><div class="centered-text"><span style="color:red">正解です。</span><br><br></div>';
+
             if(count<5){
                 mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
 
