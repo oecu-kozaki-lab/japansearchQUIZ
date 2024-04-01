@@ -78,6 +78,23 @@
     background-color: #4e6cd2;
 }
 
+#home{
+  background-color: #ff514e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block;
+  margin: 0 auto;
+}
+
+#home:hover {
+  background-color: #d54846;
+}
+
+
 
 
 body {
