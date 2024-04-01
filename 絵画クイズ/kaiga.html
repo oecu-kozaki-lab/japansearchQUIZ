@@ -146,7 +146,8 @@ function checkAnswer(correctAnswer) {
             answerButton.style.display = 'none';
             mesText += '<br>'+'<span style="color:red">正解です。'+'<br>'+'<br>';
             if(count<5){
-            mesText += `<button onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+                mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+
             }
             else{
                 mesText += `<button onclick="makeQuery()">結果を見る</button>`+'<br>';
@@ -164,7 +165,8 @@ function checkAnswer(correctAnswer) {
             mesText += '<br>'+'正解は ' +'<span style="color:red">'+ correctAnswer +'</span>' + ' です。'+'<br>'+'<br>';
             //mesText.style.color='red';
             if(count<5){
-            mesText2 += `<button onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+                mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+
             }
             else{
                 mesText += `<button onclick="makeQuery()">結果を見る</button>`+'<br>';
