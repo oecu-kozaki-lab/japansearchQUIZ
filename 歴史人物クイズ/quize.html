@@ -148,7 +148,7 @@ function checkAnswer(correctAnswer) {
 
             }
             else{
-                mesText += `<button onclick="makeQuery()">結果を見る</button>`+'<br>';
+                mesText += `<button id="showresultButton" onclick="makeQuery()">結果を見る</button>`+'<br>';
             }
             next.innerHTML=mesText+mesText2;
             correct++;
@@ -169,7 +169,7 @@ function checkAnswer(correctAnswer) {
 
             }
             else{
-                mesText += `<button onclick="makeQuery()">結果を見る</button>`+'<br>';
+                mesText += `<button id="showresultButton" onclick="makeQuery()">結果を見る</button>`+'<br>';
             }
             next.innerHTML=mesText+mesText2;
         }
