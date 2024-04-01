@@ -159,7 +159,9 @@ function checkAnswer(correctAnswer) {
             //renext.style.display='inline';
             answerButton.style.display = 'none';
             //mesText+="正解は " + correctAnswer + " です。"+'<br>';
-            mesText += '<br>'+'正解は ' +'<span style="color:red">'+ correctAnswer +'</span>' + ' です。'+'<br>'+'<br>';
+            mesText += '<br><div class="centered-text">正解は <span class="correct-answer" style="color:red;">' + correctAnswer + '</span> です。</div><br><br>';
+
+
             //mesText.style.color='red';
             if(count<5){
                 mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
