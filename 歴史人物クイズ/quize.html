@@ -136,6 +136,9 @@ function checkAnswer(correctAnswer) {
     if (selectedAnswer) {
         const answerValue = selectedAnswer.value;
         if (answerValue === correctAnswer) {
+            // 正解の場合
+            const audio = new Audio("sound/正解音.mp3");
+            audio.play();
             //alert("正解です");
             //form.disabled = true;
             next.style.display = 'inline';
@@ -156,6 +159,9 @@ function checkAnswer(correctAnswer) {
         } else {
             //alert("不正解です。正解は " + correctAnswer + " です。");
             //form.disabled = true;
+              // 不正解の場合
+              const audio = new Audio("sound/不正解音.mp3");
+            audio.play();
             next.style.display = 'inline';
             //renext.style.display='inline';
             answerButton.style.display = 'none';
