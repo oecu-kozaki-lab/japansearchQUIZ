@@ -49,31 +49,31 @@
     const data = resultData.results.bindings; // 戻り値のデータを格納する配列（JSON）
     count++;
     let mesText = '<h2>クイズ問題'+'<br>'+count+'/5問目</h2>'; // 表示内容を作成するための変数
-    if(count==6){
+    if(count==6){ //問題数が5回に達した時
 
-        mesText="あなたの正解は"+correct+"問です";
+        mesText="あなたの正解は"+correct+"問です"; //mesTextに正解数を書き込む
 
-        count=0;
-        correct=0;
-        alert(mesText);
-        mesText += `<button id="home" onclick="goToHomePage()">ホームに戻る</button>`; // 回答を完了するボタン
-        mesText += `<button id="return" onclick="makeQuery()">もう1度問題を解く</button>`; // 回答を完了するボタン
-        resultArea.innerHTML = mesText;
+        count=0; //問題数のcountの値をリセットする
+        correct=0; //正解数のcorrectの値をリセットする
+        alert(mesText); //アラートとして正解数を表示する
+        mesText += `<button id="home" onclick="goToHomePage()">ホームに戻る</button>`; // 回答を完了するボタンを作成＆表示する
+        mesText += `<button id="return" onclick="makeQuery()">もう1度問題を解く</button>`; // 回答を完了するボタンを作成＆表示する
+        resultArea.innerHTML = mesText; //mesTextを表示する
         return;
     }
 
     // データが存在する場合のみ処理を実行
     if (data.length > 0) {
         // データからランダムに1つの歴史人物を選択
-        const randomIndex = Math.floor(Math.random() * data.length);
-        const cho = data[randomIndex];
+        const randomIndex = Math.floor(Math.random() * data.length); //データの数を上限として、ランダムな値を取得する
+        const cho = data[randomIndex]; //上で取得したランダムの値のデータをchoに代入する
         let question = '';
-        if (cho.thumbnail) {
-            question = `<img src="${cho.thumbnail.value}" alt="クイズ画像">`; // 画像がある場合
-        } else {
-            makeQuery();
-            count=count-1;
-            //question = '<p>画像が見つかりませんでした。</p>'; // 画像がない場合
+        if (cho.thumbnail) { // 画像がある場合
+            question = `<img src="${cho.thumbnail.value}" alt="クイズ画像">`; //choのデータの画像をquestionに代入する
+        } else { // 画像がない場合
+            makeQuery(); //クエリ作成の関数
+            count=count-1; //問題数のcountの値を1減らす
+            //question = '<p>画像が見つかりませんでした。</p>';
         }
         const correctAnswer = cho.label.value;
         const options = generateOptions(correctAnswer, data);
@@ -185,7 +185,7 @@ function checkAnswer(correctAnswer) {
 
 function goToHomePage() { //ホームページ取得
         window.location.href = "../home.html"; // ホームページへのリンク
-    }
+}
 
 
 </script>
