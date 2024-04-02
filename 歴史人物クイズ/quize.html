@@ -7,16 +7,16 @@
 <script>{
  
     window.addEventListener('load', async () => {
-        const sendButton = document.getElementById('send');
-        const resendButton = document.getElementById('resend');
+      //  const sendButton = document.getElementById('send');
         // 検索実行ボタンで実行する処理
-        sendButton.addEventListener('click', async () => {
+        //sendButton.addEventListener('click', async () => {
+            //sendButton.style.display = 'none';
             makeQuery();
-        }, false);
+        //}, false);
 
-        resendButton.addEventListener('click', async () => {
-            makeQuery();
-        }, false);
+        //resendButton.addEventListener('click', async () => {
+            //makeQuery();
+        //}, false);
     }, false);
  }
     
@@ -209,7 +209,7 @@ function goToHomePage() { //ホームページ取得
 <h2>歴史人物クイズ</h2>
 </header>
 <div id="menu" class="container">
-<input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">
+<!--<input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">-->
 </div>
 <!-- 検索条件設定の領域 -->
 <div id="query" class="container">
