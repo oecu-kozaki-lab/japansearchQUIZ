@@ -7,28 +7,17 @@
 <script>{
  
     window.addEventListener('load', async () => {
-      //  const sendButton = document.getElementById('send');
-        // 検索実行ボタンで実行する処理
-        //sendButton.addEventListener('click', async () => {
-            //sendButton.style.display = 'none';
-            makeQuery();
-        //}, false);
-
-        //resendButton.addEventListener('click', async () => {
-            //makeQuery();
-        //}, false);
+    makeQuery(); //クエリを実行する関数を実行
     }, false);
  }
     
- let count=0;
- let correct=0;
-    
+ let count=0; //問題数をカウントする変数
+ let correct=0; //正解数をカウントする変数
     
     // SPARQLクエリを実行する
     async function makeQuery(){
-        const button = document.getElementById('next');
-        // ボタンを非表示にする
-        button.style.display = 'none';
+        const button = document.getElementById('next'); //「次の問題へ」ボタンを表示するための要素を取得する
+        button.style.display = 'none'; //「次の問題へ」ボタンを非表示にする
 
         // SPARQLエンドポイントの指定
         let endpoint = "https://jpsearch.go.jp/rdf/sparql/";
@@ -42,10 +31,11 @@
         // SPARQLクエリの実行結果の表示処理
         const resultArea = document.getElementById('result_div');
 
+        // 問題を作成する関数
         showResult(resultData, resultArea);
     }
 
-    function showResult(resultData, resultArea) {
+    function showResult(resultData, resultArea) { //問題を作成する関数
     const data = resultData.results.bindings; // 戻り値のデータを格納する配列（JSON）
     count++;
     let mesText = '<h2>クイズ問題'+'<br>'+count+'/5問目</h2>'; // 表示内容を作成するための変数
@@ -64,58 +54,62 @@
 
     // データが存在する場合のみ処理を実行
     if (data.length > 0) {
-        // データからランダムに1つの歴史人物を選択
-        const randomIndex = Math.floor(Math.random() * data.length); //データの数を上限として、ランダムな値を取得する
-        const cho = data[randomIndex]; //上で取得したランダムの値のデータをchoに代入する
+        // データからランダムに1つの歴史人物を選択(正解の選択肢作成)
+        const randomIndex = Math.floor(Math.random() * data.length); //データの数を上限として、ランダムな数値を取得する
+        const cho = data[randomIndex]; //取得したランダムな数値と対応したデータをchoに代入する
         let question = '';
+
         if (cho.thumbnail) { // 画像がある場合
             question = `<img src="${cho.thumbnail.value}" alt="クイズ画像">`; //choのデータの画像をquestionに代入する
-        } else { // 画像がない場合
-            makeQuery(); //クエリ作成の関数
+        } 
+        else { // 画像がない場合
+            makeQuery(); //クエリ作成の関数を実行し、問題を再生成
             count=count-1; //問題数のcountの値を1減らす
-            //question = '<p>画像が見つかりませんでした。</p>';
         }
-        const correctAnswer = cho.label.value;
-        const options = generateOptions(correctAnswer, data);
 
-        mesText += `<p>${question}</p>
-                    <form id="quizForm">`; // ラジオボタンのフォーム開始
+        const correctAnswer = cho.label.value;//choのラベル(人物名)を取得
+        const options = generateOptions(correctAnswer, data);//不正解の選択肢を作成する関数を実行
+
+        mesText += `<p>${question}</p> 
+                    <form id="quizForm">`; // 画像の表示及びラジオボタンのフォーム開始
         // 選択肢を表示
-        options.forEach(option => {
-            mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`;
+        options.forEach(option => { //options(4択の選択肢)のデータの数だけループ処理する
+            mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`; //値とラベルがoption(人物名)のラジオボタンを作成する
         });
         mesText += `</form>`; // ラジオボタンのフォーム終了
         mesText += `<button id="answerButton" onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
     } else {
         mesText = '<p>クエリにマッチするデータが見つかりませんでした。</p>';
     }
-    resultArea.innerHTML = mesText;
+    resultArea.innerHTML = mesText; // HTMLにmesTextの内容を書き込む
 }
 
 
     // 不正解の選択肢を生成する関数
     function generateOptions(correctAnswer, data) {
-        const options = [correctAnswer];
-        while(options.length < 4) {
-            const randomIndex = Math.floor(Math.random() * data.length);
-            const randomOption = data[randomIndex].label.value;
-            if(!options.includes(randomOption)) {
-                options.push(randomOption);
+        const options = [correctAnswer]; //options(4択の選択肢)に答えを代入する
+        while(options.length < 4) { //optionsのデータ数が4以下の場合に実行する
+            const randomIndex = Math.floor(Math.random() * data.length);//データの数を上限として、ランダムな数値を取得する
+            const randomOption = data[randomIndex].label.value; //上で取得したランダムな数値のデータのラベル名をrandomOptionに代入する
+            if(!options.includes(randomOption)) { //ランダムに取得したデータが4択の選択肢に使用されていない場合
+                options.push(randomOption); //4択の選択肢(options)の中にrandomOptionのデータを追加する。
             }
         }
+
         // 選択肢をシャッフル
-        shuffleArray(options);
+        shuffleArray(options); //作成した4択問題をシャッフルする関数
         return options;
     }
 
     // 配列をシャッフルする関数
-    function shuffleArray(array) {
-        for(let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
+    function shuffleArray(array) { //arrayは4択の選択肢
+        for(let i = array.length - 1; i > 0; i--) { //array.lengthは4(4択問題のため)であり、3回(array.lengthが3～1の間)実行される
+            const j = Math.floor(Math.random() * (i + 1)); //jに計算した0～iのランダムな値を代入する
+            [array[i], array[j]] = [array[j], array[i]]; //iとjの配列を交換する
         }
     }
 
+    //クエリの送信と結果の受け取り
     async function sendSPARQLQuery(endpoint, query) {
         const response = await fetch(endpoint + '?query=' + encodeURIComponent(query) + '&format=json');
         return await response.json();
@@ -124,80 +118,54 @@
  // 回答をチェックする関数
 function checkAnswer(correctAnswer) {
     let mesText = ''; // 表示内容を作成するための変数
-    let mesText2 = ''; // 表示内容を作成するための変数
-    let total=0;
-    const form = document.getElementById("quizForm");
-    const next = document.getElementById("next");
-    const answerButton = document.getElementById('answerButton');
-    //const renext = document.getElementById("renext");
-    const selectedAnswer = form.querySelector('input[name="answer"]:checked');
-    const button = document.getElementById('next');
+    const form = document.getElementById("quizForm"); //クイズを表示するフォームを取得
+    const next = document.getElementById("next"); //「次の問題へ」ボタンを表示するための要素を取得する
+    const answerButton = document.getElementById('answerButton'); //「回答を完了する」ボタンを表示するための要素を取得する
+    const selectedAnswer = form.querySelector('input[name="answer"]:checked'); 
+    //ラジオボタンをチェックして、「回答を完了する」ボタンを押した場合にラジオボタンの要素を取得する
 
-    if (selectedAnswer) {
-        const answerValue = selectedAnswer.value;
-        if (answerValue === correctAnswer) {
-            // 正解の場合
-            const audio = new Audio("sound/正解音.mp3");
+    if (selectedAnswer) { //ラジオボタンをチェックして、「回答を完了する」ボタンを押した場合の処理
+        const answerValue = selectedAnswer.value; //selectedAnswer(ラジオボタンでチェックした値)のラベル名を代入
+
+        if (answerValue === correctAnswer) { // 選択した人物名と正解の人物名を比較して同じだった場合
+            const audio = new Audio("sound/正解音.mp3"); //正解音をaudioに代入
+            audio.play(); //正解音を鳴らす
+            mesText += '<br><div class="centered-text"><span style="color:red">正解です。</span><br><br></div>';//「正解です。」とmesTextに代入する
+            correct++; //正解数を1増やす
+        }
+        else { // 不正解の場合
+            const audio = new Audio("sound/不正解音.mp3"); //不正解の音をaudioに代入
             audio.play();
-            //alert("正解です");
-            //form.disabled = true;
-            next.style.display = 'inline';
-            //renext.style.display='inline';
-            answerButton.style.display = 'none';
-            mesText += '<br><div class="centered-text"><span style="color:red">正解です。</span><br><br></div>';
-
-            if(count<5){
-                mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
-
-            }
-            else{
-                mesText += `<button id="showresultButton" onclick="makeQuery()">結果を見る</button>`+'<br>';
-            }
-            next.innerHTML=mesText+mesText2;
-            correct++;
-
-        } else {
-            //alert("不正解です。正解は " + correctAnswer + " です。");
-            //form.disabled = true;
-              // 不正解の場合
-              const audio = new Audio("sound/不正解音.mp3");
-            audio.play();
-            next.style.display = 'inline';
-            //renext.style.display='inline';
-            answerButton.style.display = 'none';
-            //mesText+="正解は " + correctAnswer + " です。"+'<br>';
             mesText += '<br><div class="centered-text">正解は <span class="correct-answer" style="color:red;">' + correctAnswer + '</span> です。</div><br><br>';
-
-
-            //mesText.style.color='red';
-            if(count<5){
-                mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
-
-            }
-            else{
-                mesText += `<button id="showresultButton" onclick="makeQuery()">結果を見る</button>`+'<br>';
-            }
-            next.innerHTML=mesText+mesText2;
+        }
+        if(count<5){ //問題回答数が5問以下の場合の処理
+            mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+        }
+        else{ //5問目の処理
+            mesText += `<button id="showresultButton" onclick="makeQuery()">結果を見る</button>`+'<br>'; //結果を表示するボタン作成
         }
 
-        const radioButtons = form.querySelectorAll('input[type="radio"]');
+        next.innerHTML=mesText; //mesTextの値を表示させる
+
+        next.style.display = 'inline'; //「次の問題へ」ボタンを表示させる
+        answerButton.style.display = 'none'; //「回答を完了する」ボタンを非表示にする
+
+        //ラジオボタンを操作無効にする
+        const radioButtons = form.querySelectorAll('input[type="radio"]'); //ラジオボタンの要素をradioButtonsに代入する
         radioButtons.forEach(button => {
-            button.disabled = true;
+            button.disabled = true; //全てのラジオボタンの操作を無効にする
         });
     }
-    else {
+    else { //ラジオボタンをチェックせず、回答を送信するボタンを押した場合の処理
         alert("回答が選択されていません。");
         resultArea.innerHTML = mesText;
     }
-
-    // 結果表示用の領域を非表示にする
-
 }
 
+//ホームページにアクセスする関数
 function goToHomePage() { //ホームページ取得
         window.location.href = "../home.html"; // ホームページへのリンク
 }
-
 
 </script>
 
@@ -209,7 +177,6 @@ function goToHomePage() { //ホームページ取得
 <h2>歴史人物クイズ</h2>
 </header>
 <div id="menu" class="container">
-<!--<input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">-->
 </div>
 <!-- 検索条件設定の領域 -->
 <div id="query" class="container">
