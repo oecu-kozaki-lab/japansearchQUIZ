@@ -6,18 +6,9 @@
 
 <script>{
  
-    window.addEventListener('load', async () => {
-        const sendButton = document.getElementById('send');
-        const resendButton = document.getElementById('resend');
-        // 検索実行ボタンで実行する処理
-        sendButton.addEventListener('click', async () => {
-            makeQuery();
-        }, false);
-
-        resendButton.addEventListener('click', async () => {
-            makeQuery();
-        }, false);
-    }, false);
+ window.addEventListener('load', async () => {
+                makeQuery(); //クエリを実行する関数を実行
+            }, false);
  }
     
  let count=0;
@@ -208,7 +199,7 @@ function goToHomePage() { //ホームページ取得
     <h2>絵画クイズ</h2>
 </header>
 <div id="menu" class="container">
-<input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">
+<!--<input type="button" id="send" value="クイズ生成" style="margin-top:8px; ">-->
 </div>
 <!-- 検索条件設定の領域 -->
 <div id="query" class="container">
