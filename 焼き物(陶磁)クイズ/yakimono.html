@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>仏像クイズ</title>
+
+<script>{
+ 
+ window.addEventListener('load', async () => {
+                makeQuery(); //クエリを実行する関数を実行
+            }, false);
+ }
+    
+ let count=0;
+ let correct=0;
+    
+    
+    // SPARQLクエリを実行する
+    async function makeQuery(){
+        const button = document.getElementById('next');
+        // ボタンを非表示にする
+        button.style.display = 'none';
+
+        // SPARQLエンドポイントの指定
+        let endpoint = "https://jpsearch.go.jp/rdf/sparql/";
+
+        // SPARQLクエリの取得
+        let query = document.getElementById('query_area').value;
+
+        // SPARQLクエリの実行処理
+        const resultData = await sendSPARQLQuery(endpoint, query);
+
+        // SPARQLクエリの実行結果の表示処理
+        const resultArea = document.getElementById('result_div');
+
+        showResult(resultData, resultArea);
+    }
+
+    function showResult(resultData, resultArea) {
+    const data = resultData.results.bindings; // 戻り値のデータを格納する配列（JSON）
+    count++;
+    let mesText = '<h2>クイズ問題'+'<br>'+count+'/5問目</h2>'; // 表示内容を作成するための変数
+    if(count==6){
+
+        mesText="あなたの正解は"+correct+"問です";
+
+        count=0;
+        correct=0;
+        alert(mesText);
+        mesText += `<button id="home" onclick="goToHomePage()">ホームに戻る</button>`; // 回答を完了するボタン
+        mesText += `<button id="return" onclick="makeQuery()">もう1度問題を解く</button>`; // 回答を完了するボタン
+        resultArea.innerHTML = mesText;
+        return;
+    }
+
+    // データが存在する場合のみ処理を実行
+    if (data.length > 0) {
+        // データからランダムに1つの歴史人物を選択
+        const randomIndex = Math.floor(Math.random() * data.length);
+        const cho = data[randomIndex];
+        let question = '';
+        if (cho.image) {
+            question = `<img src="${cho.image.value}" alt="クイズ画像">`; // 画像がある場合
+            console.log(cho.image.value);
+        } else {
+            makeQuery();
+            count=count-1;
+            //question = '<p>画像が見つかりませんでした。</p>'; // 画像がない場合
+        }
+        const correctAnswer = cho.creator.value.replace("https://jpsearch.go.jp/entity/chname/","");
+        const options = generateOptions(correctAnswer, data);
+
+        mesText += `<p>${question}</p>
+                    <form id="quizForm">`; // ラジオボタンのフォーム開始
+        // 選択肢を表示
+        options.forEach(option => {
+            option = option.replace("https://jpsearch.go.jp/entity/ncname/","");
+            option = option.replace("https://jpsearch.go.jp/entity/chname/","");
+
+            mesText += `<input type="radio" name="answer" value="${option}">${option}<br>`;
+        });
+        mesText += `</form>`; // ラジオボタンのフォーム終了
+        mesText += `<button id="answerButton" onclick="checkAnswer('${correctAnswer}')">回答を完了する</button>`; // 回答を完了するボタン
+    } else {
+        mesText = '<p>クエリにマッチするデータが見つかりませんでした。</p>';
+    }
+    resultArea.innerHTML = mesText;
+}
+
+
+    // 不正解の選択肢を生成する関数
+    function generateOptions(correctAnswer, data) {
+        const options = [correctAnswer];
+        while(options.length < 4) {
+            const randomIndex = Math.floor(Math.random() * data.length);
+            const randomOption = data[randomIndex].creator.value.replace("https://jpsearch.go.jp/entity/chname/","");
+            if(!options.includes(randomOption)) {
+                options.push(randomOption);
+            }
+        }
+        // 選択肢をシャッフル
+        shuffleArray(options);
+        return options;
+    }
+
+    // 配列をシャッフルする関数
+    function shuffleArray(array) {
+        for(let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    async function sendSPARQLQuery(endpoint, query) {
+        const response = await fetch(endpoint + '?query=' + encodeURIComponent(query) + '&format=json');
+        return await response.json();
+    }
+
+ // 回答をチェックする関数
+function checkAnswer(correctAnswer) {
+    let mesText = ''; // 表示内容を作成するための変数
+    let mesText2 = ''; // 表示内容を作成するための変数
+    let total=0;
+    const form = document.getElementById("quizForm");
+    const next = document.getElementById("next");
+    const answerButton = document.getElementById('answerButton');
+    //const renext = document.getElementById("renext");
+    const selectedAnswer = form.querySelector('input[name="answer"]:checked');
+    const button = document.getElementById('next');
+    correctAnswer=correctAnswer.replace("https://jpsearch.go.jp/entity/ncname/","");
+    correctAnswer = correctAnswer.replace("https://jpsearch.go.jp/entity/chname/","");
+
+    if (selectedAnswer) {
+        const answerValue = selectedAnswer.value;
+        if (answerValue === correctAnswer) {
+            //alert("正解です");
+            //form.disabled = true;
+              // 正解の場合
+              const audio = new Audio("sound/正解音.mp3");
+            audio.play();
+            next.style.display = 'inline';
+            //renext.style.display='inline';
+            answerButton.style.display = 'none';
+            mesText += '<br><div class="centered-text"><span style="color:red">正解です。</span><br><br></div>';
+
+            if(count<5){
+                mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+            }
+            else{
+                mesText += `<button id="showresultButton" onclick="makeQuery()">結果を見る</button>`+'<br>';
+            }
+            next.innerHTML=mesText+mesText2;
+            correct++;
+
+        } else {
+            //alert("不正解です。正解は " + correctAnswer + " です。");
+            //form.disabled = true;
+            const audio = new Audio("sound/不正解音.mp3");
+            audio.play();
+            next.style.display = 'inline';
+            //renext.style.display='inline';
+            answerButton.style.display = 'none';
+            //mesText+="正解は " + correctAnswer + " です。"+'<br>';
+            mesText += '<br><div class="centered-text">正解は <span class="correct-answer" style="color:red;">' + correctAnswer + '</span> です。</div><br><br>';
+
+            //mesText.style.color='red';
+            if(count<5){
+                mesText += `<button id="nextButton" onclick="makeQuery()">次の問題へ</button>`+'<br>'; // 次の問題作成のボタン
+            }
+            else{
+                mesText += `<button id="showresultButton" onclick="makeQuery()">結果を見る</button>`+'<br>';
+            }
+            next.innerHTML=mesText+mesText2;
+        }
+
+        const radioButtons = form.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(button => {
+            button.disabled = true;
+        });
+    }
+    else {
+        alert("回答が選択されていません。");
+        resultArea.innerHTML = mesText;
+    }
+    // 結果表示用の領域を非表示にする
+
+}
+
+function goToHomePage() { //ホームページ取得
+        window.location.href = "../home.html"; // ホームページへのリンク
+}
+
+
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" media="screen" href="quize.css" />
+</head>
+<body>
+<header id="head" >
+    <h2>仏像クイズ</h2>
+</header>
+<div id="menu" class="container">
+<!--<input type="button" id="send" value="クイズ生成" style="margin-top:8px; "> -->
+</div>
+<!-- 検索条件設定の領域 -->
+<div id="query" class="container">
+<textarea id="query_area" class="t_area" rows="10" style="display: none;">
+    SELECT DISTINCT ?cho ?label ?image ?creator
+    WHERE {
+        {?cho schema:creator <https://jpsearch.go.jp/entity/chname/美濃_(陶磁)>}
+      UNION{?cho schema:creator <https://jpsearch.go.jp/entity/chname/信楽_(陶磁)>}
+      UNION{?cho schema:creator <https://jpsearch.go.jp/entity/chname/唐津_(陶磁)>}
+      UNION{?cho schema:creator <https://jpsearch.go.jp/entity/chname/伊万里_(陶磁)>}
+       FILTER (!CONTAINS(?label,"袋形水指"))
+         ?cho rdfs:label ?label.
+         ?cho <http://schema.org/image> ?image.
+         ?cho  schema:creator ?creator.
+    }       
+</textarea>
+<br>
+</div>
+
+<!-- 結果表示用の領域 -->
+<div id="result_div" class="container" style="flex: 1;"></div>
+<div id="next"></div>
+<div id="renext"></div>
+
+
+</body>
+</html>
