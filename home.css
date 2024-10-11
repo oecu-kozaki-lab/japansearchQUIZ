@@ -71,3 +71,9 @@ a {
   text-align: center;
 }
   
+.header__flex {
+  display: flex;
+  height: 60px;
+  align-items: center;
+  justify-content: space-between; /* h2とbuttonの間にスペースを作り、buttonを右端に配置 */
+}
